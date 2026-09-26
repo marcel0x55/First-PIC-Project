@@ -1,4 +1,5 @@
 ; TODO INSERT CONFIG CODE HERE USING CONFIG BITS GENERATOR
+LIST p=16f690
 #include "p16f690.inc"
 
 ; CONFIG
@@ -18,7 +19,7 @@ LFSR	EQU 0X70
 TW	EQU 0X71
 TSTATUS EQU 0X72
     
-RES_VECT  CODE    0x0000            ; processor reset vector
+ ORG 0x0000            ; processor reset vector
     GOTO    START                   ; go to beginning of program
 
 
@@ -44,7 +45,7 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 
     
     
-MAIN_PROG CODE                      ; let linker place main program
+;MAIN_PROG CODE                      ; let linker place main program
 
 START:
     BSF STATUS,RP0 ;BANK 1
