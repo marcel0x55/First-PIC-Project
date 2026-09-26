@@ -2,7 +2,7 @@ SRC       := $(wildcard *.asm)
 TARGET    := $(basename $(notdir $(firstword $(SRC))))
 BUILD_DIR := build
 
-GPASM     := gpasm
+GPASM     := gpasm -a inhx32
 PK2CMD    := pk2cmd -B/usr/share/pk2/
 
 ifdef MCU
