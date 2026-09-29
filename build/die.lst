@@ -1,4 +1,4 @@
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  1
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  1
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -36,439 +36,458 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
   00000071            00019 TW      EQU 0X71
   00000072            00020 TSTATUS EQU 0X72
   00000073            00021 PCLTMP  EQU 0X73
-                      00022     
-0000                  00023  ORG 0x0000            ; processor reset vector
-0000   2817           00024     GOTO    START                   ; go to beginning of program
-                      00025 
+  00000074            00022 INTD    EQU 0X74
+                      00023     
+0000                  00024  ORG 0x0000            ; processor reset vector
+0000   2817           00025     GOTO    START                   ; go to beginning of program
                       00026 
-                      00027     
-                      00028 ;INTERRUPT HANDLER:
-0004                  00029  ORG 0X0004
-0004   00F1           00030     MOVWF TW    ;SAVE W
-0005   0E03           00031     SWAPF STATUS,W  ;SAVE STATUS
-0006   00F2           00032     MOVWF TSTATUS
-0007   080A           00033     MOVF PCLATH,W
-0008   00F3           00034     MOVWF PCLTMP
-0009   018A           00035     CLRF PCLATH    
-                      00036 
-000A   300D           00037     MOVLW HIGH(LUT)
-000B   008A           00038     MOVWF PCLATH
-000C   0870           00039     MOVF LFSR,W
-000D   2500           00040     CALL LUT    ;FOR FASTER EXECUTION AND BECAUSE WE HAVE A LOT OF UNUSED SPACE ON THE FLASH I'VE OPTED 
+                      00027 
+                      00028     
+                      00029 ;INTERRUPT HANDLER:
+0004                  00030  ORG 0X0004
+0004   00F1           00031     MOVWF TW    ;SAVE W
+0005   0E03           00032     SWAPF STATUS,W  ;SAVE STATUS
+0006   00F2           00033     MOVWF TSTATUS
+0007   080A           00034     MOVF PCLATH,W
+0008   00F3           00035     MOVWF PCLTMP
+0009   018A           00036     CLRF PCLATH    
+                      00037 
+000A   300D           00038     MOVLW HIGH(LUT)
+000B   008A           00039     MOVWF PCLATH
+000C   0870           00040     MOVF LFSR,W
+000D   2500           00041     CALL LUT    ;FOR FASTER EXECUTION AND BECAUSE WE HAVE A LOT OF UNUSED SPACE ON THE FLASH I'VE OPTED 
                             TO USE A LOOKUP TABLE INSTEAD OF CALCULATING LFSR % 6 AND PUTTING THE APROPRIATE SIGNALS ON PORTC
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  2
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
 Message[1302]: RAM Bank undefined in this chunk of code. Ensure that bank bits are correct. Assuming bank 0 from now on.
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  2
-
-
-LOC    OBJECT CODE    LINE  SOURCE TEXT
-  VALUE
-
-000E   0087           00041     MOVWF PORTC
-                      00042 
-000F   0806           00043     MOVF PORTB,W        ;LATCH FOR INTERRUPT ON CHANGE TO WORK
-                      00044 
-0010   0873           00045     MOVF PCLTMP,W
-0011   008A           00046     MOVWF PCLATH
-0012   0E72           00047     SWAPF TSTATUS,W  
-0013   0083           00048     MOVWF STATUS    ;RESTORE STATUS
-0014   0871           00049     MOVF TW,W      ;RESTORE W
-0015   100B           00050     BCF INTCON,RABIF
-0016   0009           00051     RETFIE
-                      00052 
+000E   0087           00042     MOVWF PORTC
+                      00043 
+000F   0806           00044     MOVF PORTB,W        ;LATCH FOR INTERRUPT ON CHANGE TO WORK
+                      00045 
+0010   0873           00046     MOVF PCLTMP,W
+0011   008A           00047     MOVWF PCLATH
+0012   0E72           00048     SWAPF TSTATUS,W  
+0013   0083           00049     MOVWF STATUS    ;RESTORE STATUS
+0014   0871           00050     MOVF TW,W      ;RESTORE W
+0015   100B           00051     BCF INTCON,RABIF
+0016   0008           00052     RETURN
                       00053 
-                      00054     
+                      00054 
                       00055     
-                      00056 ;MAIN_PROG CODE                      ; let linker place main program
-                      00057 
-0017                  00058 START:
-0017   1683           00059     BSF STATUS,RP0 ;BANK 1
-0018   308F           00060     MOVLW 0X8F
+                      00056     
+                      00057 ;MAIN_PROG CODE                      ; let linker place main program
+                      00058 
+0017                  00059 START:
+0017   1683           00060     BSF STATUS,RP0 ;BANK 1
+0018   308F           00061     MOVLW 0X8F
 Message[1302]: RAM Bank undefined in this chunk of code. Ensure that bank bits are correct. Assuming bank 1 from now on.
-0019   058F           00061     ANDWF OSCCON,F   ;SET LFINTOSC 31KHZ
-                      00062     
-001A   3080           00063     MOVLW 0X80
-001B   0087           00064     MOVWF TRISC ;PORTC OUTPUT FOR LEDS (EXCEPT RC7, UNUSED SO INPUT)
-                      00065     
-001C   30FF           00066     MOVLW 0XFF
-001D   0085           00067     MOVWF TRISA ;PORTA INPUT BECAUSE UNUSED
-001E   0086           00068     MOVWF TRISB ;PORTB INPUT FOR ADC
-                      00069     
-001F   1283           00070     BCF STATUS,RP0
-0020   1703           00071     BSF STATUS,RP1 ;BANK 2
-                      00072     
-0021   019E           00073     CLRF ANSEL
-0022   019F           00074     CLRF ANSELH
-0023   159F           00075     BSF ANSELH,ANS11 ;SELECT ADC CHANNEL AN11
-                      00076     
-0024   1303           00077     BCF STATUS,RP1 ;BANK 0
-                      00078     
-0025   3000           00079     MOVLW 0X00  ;-|
-0026   0087           00080     MOVWF PORTC ;-|-WE TURN OFF THE LEDS UNTIL THE USER PRESSES THE BUTTON
-                      00081    
-                      00082     ;WE TAKE A MEASUREMENT WITH THE ADC ON A FLOATING PIN SO WE READ NOISE WHICH WE USE AS A RANDOM ENOU
+0019   058F           00062     ANDWF OSCCON,F   ;SET LFINTOSC 31KHZ
+                      00063     
+001A   3080           00064     MOVLW 0X80
+001B   0087           00065     MOVWF TRISC ;PORTC OUTPUT FOR LEDS (EXCEPT RC7, UNUSED SO INPUT)
+                      00066     
+001C   30FF           00067     MOVLW 0XFF
+001D   0085           00068     MOVWF TRISA ;PORTA INPUT BECAUSE UNUSED
+001E   0086           00069     MOVWF TRISB ;PORTB INPUT FOR ADC
+                      00070     
+001F   1283           00071     BCF STATUS,RP0
+0020   1703           00072     BSF STATUS,RP1 ;BANK 2
+                      00073     
+0021   019E           00074     CLRF ANSEL
+0022   019F           00075     CLRF ANSELH
+0023   159F           00076     BSF ANSELH,ANS11 ;SELECT ADC CHANNEL AN11
+                      00077     
+0024   1303           00078     BCF STATUS,RP1 ;BANK 0
+                      00079     
+0025   3000           00080     MOVLW 0X00  ;-|
+0026   0087           00081     MOVWF PORTC ;-|-WE TURN OFF THE LEDS UNTIL THE USER PRESSES THE BUTTON
+                      00082    
+                      00083     ;WE TAKE A MEASUREMENT WITH THE ADC ON A FLOATING PIN SO WE READ NOISE WHICH WE USE AS A RANDOM ENOU
                             GH SEED FOR THE LFSR
-                      00083     
-0027   141F           00084     BSF ADCON0,ADON ;TURN ON ADC
-                      00085     
-0028   151F           00086     BSF ADCON0,CHS0 ;-|
-0029   159F           00087     BSF ADCON0,CHS1 ;-|
-002A   121F           00088     BCF ADCON0,CHS2 ;-|
-002B   169F           00089     BSF ADCON0,CHS3 ;-|-SELECT AN11 AS INPUT FOR ADC
-                      00090     
-002C   131F           00091     BCF ADCON0,VCFG ;SELECT VDD AS REFFERENCE FOR ADC
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  3
+                      00084     
+0027   141F           00085     BSF ADCON0,ADON ;TURN ON ADC
+                      00086     
+0028   151F           00087     BSF ADCON0,CHS0 ;-|
+0029   159F           00088     BSF ADCON0,CHS1 ;-|
+002A   121F           00089     BCF ADCON0,CHS2 ;-|
+002B   169F           00090     BSF ADCON0,CHS3 ;-|-SELECT AN11 AS INPUT FOR ADC
+                      00091     
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  3
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
   VALUE
 
-                      00092     
-002D                  00093 TRYADC:
-002D   149F           00094     BSF ADCON0,GO     ;-|
-002E                  00095 WAITADC:              ;-|
-002E   189F           00096     BTFSC ADCON0,GO   ;-|
-002F   282E           00097     GOTO WAITADC      ;-|-START THE ADC READ AND WAITS FOR IT TO FINISH
-0030   081E           00098     MOVF ADRESH,W
-0031   1903           00099     BTFSC STATUS,Z    ;WE CANT USE 0 AS A SEED FOR THE LFSR SO WE READ AGAIN AND AGAIN UNTIL WE GET SOME
+002C   131F           00092     BCF ADCON0,VCFG ;SELECT VDD AS REFFERENCE FOR ADC
+                      00093     
+002D                  00094 TRYADC:
+002D   149F           00095     BSF ADCON0,GO     ;-|
+002E                  00096 WAITADC:              ;-|
+002E   189F           00097     BTFSC ADCON0,GO   ;-|
+002F   282E           00098     GOTO WAITADC      ;-|-START THE ADC READ AND WAITS FOR IT TO FINISH
+0030   081E           00099     MOVF ADRESH,W
+0031   1903           00100     BTFSC STATUS,Z    ;WE CANT USE 0 AS A SEED FOR THE LFSR SO WE READ AGAIN AND AGAIN UNTIL WE GET SOME
                              NON ZERO VALUE
-0032   282D           00100     GOTO TRYADC
-                      00101     
-0033   101F           00102     BCF ADCON0,ADON ;TURN OFF ADC FOR POWER SAVING
-                      00103 
-0034   00F0           00104     MOVWF LFSR  ;STORE THE ADC RESULT IN THE LFSR
-                      00105     
-0035   1683           00106     BSF STATUS,RP0    ;BANK 1
-0036   1381           00107     BCF OPTION_REG,7      ;ENABLE WEAK PULL-UPS
-0037   1283           00108     BCF STATUS,RP0    ;BANK 0
-                      00109     
-0038   1703           00110     BSF STATUS,RP1    ;BANK 2
-0039   1795           00111     BSF WPUB,WPUB7        ;ENABLE THE WEAK PULL-UP ON RB7
-003A   1796           00112     BSF IOCB,IOCB7        ;ENABLE INTRERRUPTS ON RB7 CHANGE
-003B   1303           00113     BCF STATUS,RP1    ;BANK 0
-                      00114    
-003C   158B           00115     BSF INTCON,RABIE ;ENABLE INTRERRUPT ON PORT CHANGE
-003D   178B           00116     BSF INTCON,GIE  ;ENABLE GLOBAL INTRERRUPTS
-                      00117  
+0032   282D           00101     GOTO TRYADC
+                      00102     
+0033   101F           00103     BCF ADCON0,ADON ;TURN OFF ADC FOR POWER SAVING
+                      00104 
+0034   00F0           00105     MOVWF LFSR  ;STORE THE ADC RESULT IN THE LFSR
+                      00106     
+0035   1683           00107     BSF STATUS,RP0    ;BANK 1
+0036   1381           00108     BCF OPTION_REG,7      ;ENABLE WEAK PULL-UPS
+0037   1283           00109     BCF STATUS,RP0    ;BANK 0
+                      00110     
+0038   1703           00111     BSF STATUS,RP1    ;BANK 2
+0039   1795           00112     BSF WPUB,WPUB7        ;ENABLE THE WEAK PULL-UP ON RB7
+003A   1796           00113     BSF IOCB,IOCB7        ;ENABLE INTRERRUPTS ON RB7 CHANGE
+003B   1303           00114     BCF STATUS,RP1    ;BANK 0
+                      00115    
+003C   30FF           00116     MOVLW 0XFF
+003D   00F4           00117     MOVWF INTD          ;INIT THE THE COUNTER FOR DELAYING THE INTERRUPT
                       00118 
-003E                  00119 LOOP:
-003E   3000           00120     MOVLW 0x00
-003F   1870           00121     BTFSC LFSR,0 ;TAP BIT 0
-0040   3001           00122     MOVLW 0x01
-0041   1970           00123     BTFSC LFSR,2 ;TAP BIT 2
-0042   3A01           00124     XORLW 0x01
-0043   19F0           00125     BTFSC LFSR,3 ;TAP BIT 3
-0044   3A01           00126     XORLW 0x01
-0045   1A70           00127     BTFSC LFSR,4 ;TAP BIT 4
-0046   3A01           00128     XORLW 0x01
-                      00129     
-                      00130    
-0047   1003           00131     BCF STATUS,C    ;-|
-0048   1D03           00132     BTFSS STATUS,Z  ;-| 
-0049   1403           00133     BSF STATUS,C    ;-|-WE TEST THE ZERO FLAG TO SEE THE RESULT OF THE XOR OPERATION AND PUT IT INTO THE
+003E   158B           00119     BSF INTCON,RABIE ;ENABLE INTRERRUPT ON PORT CHANGE
+003F   178B           00120     BSF INTCON,GIE  ;ENABLE GLOBAL INTRERRUPTS
+                      00121  
+                      00122 
+0040                  00123 LOOP:
+0040   3000           00124     MOVLW 0x00
+0041   1870           00125     BTFSC LFSR,0 ;TAP BIT 0
+0042   3001           00126     MOVLW 0x01
+0043   1970           00127     BTFSC LFSR,2 ;TAP BIT 2
+0044   3A01           00128     XORLW 0x01
+0045   19F0           00129     BTFSC LFSR,3 ;TAP BIT 3
+0046   3A01           00130     XORLW 0x01
+0047   1A70           00131     BTFSC LFSR,4 ;TAP BIT 4
+0048   3A01           00132     XORLW 0x01
+                      00133     
+                      00134    
+0049   1003           00135     BCF STATUS,C    ;-|
+004A   1D03           00136     BTFSS STATUS,Z  ;-| 
+004B   1403           00137     BSF STATUS,C    ;-|-WE TEST THE ZERO FLAG TO SEE THE RESULT OF THE XOR OPERATION AND PUT IT INTO THE
                              CARRY BIT SO THAT IT CAN BE ROTATED INTO THE LFSR REGISTER
-                      00134     
-004A   0CF0           00135     RRF LFSR,F  ;WE ROTATE THE REGISTER TO THE RIGHT BRINGING THE RESULT FROM CARRY INTO THE REGISTER
-                      00136     
-004B   283E           00137     GOTO LOOP                          ; loop forever
-                      00138   
-                      00139 
+                      00138     
+004C   0CF0           00139     RRF LFSR,F  ;WE ROTATE THE REGISTER TO THE RIGHT BRINGING THE RESULT FROM CARRY INTO THE REGISTER
                       00140 
-0D00                  00141  ORG 0X0D00         ;WE START AT THE TOP OF THE PAGE SO PCL DOESN'T OVERFLOW AND WE CAN USE ALL THE AVAI
+                      00141     ;SOFTWARE DEBOUNCE FOR THE BUTTON, PREVENTS MULTIPLE INTERRUPTS ON THE SAME PRESS
+004D   138B           00142     BCF INTCON,GIE  ;DISABLE GLOBAL INTRERRUPTS
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  4
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+                      00143     
+004E   0BF4           00144     DECFSZ INTD,F
+004F   2840           00145     GOTO LOOP
+                      00146 
+0050   03F4           00147     DECF INTD,F         ;UNDEFLOW BACK TO 0XFF
+0051   178B           00148     BSF INTCON,GIE  ;ENABLE GLOBAL INTRERRUPTS
+                      00149     
+0052   2840           00150     GOTO LOOP                          ; loop forever
+                      00151   
+                      00152 
+                      00153 
+0D00                  00154  ORG 0X0D00         ;WE START AT THE TOP OF THE PAGE SO PCL DOESN'T OVERFLOW AND WE CAN USE ALL THE AVAI
                             LABLE 255 INSTRUCTIONS
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  4
-
-
-LOC    OBJECT CODE    LINE  SOURCE TEXT
-  VALUE
-
-0D00                  00142 LUT:                ;THE LOOKUP TABLE BASICALLY DOES (LFSR % 6) + 1 BUT THE RESULT IS DIRECTLY IN THE FO
+0D00                  00155 LUT:                ;THE LOOKUP TABLE BASICALLY DOES (LFSR % 6) + 1 BUT THE RESULT IS DIRECTLY IN THE FO
                             RMAT NEEDED FOR DISPLAYING THAT NUMBER ON THE LEDS
-0D00   0782           00143     ADDWF PCL,F     ;W IS ALWAYS NON ZERO BECAUSE THE LFSR IS ALWAYS NON ZERO SO NO RISK OF INFINITE LOO
+0D00   0782           00156     ADDWF PCL,F     ;W IS ALWAYS NON ZERO BECAUSE THE LFSR IS ALWAYS NON ZERO SO NO RISK OF INFINITE LOO
                             P
-                      00144     
-0D01   3440           00145     RETLW DIE1
-0D02   3412           00146     RETLW DIE2
-0D03   344C           00147     RETLW DIE3
-0D04   342D           00148     RETLW DIE4
-0D05   346D           00149     RETLW DIE5
-0D06   343F           00150     RETLW DIE6
-0D07   3440           00151     RETLW DIE1
-0D08   3412           00152     RETLW DIE2
-0D09   344C           00153     RETLW DIE3
-0D0A   342D           00154     RETLW DIE4
-0D0B   346D           00155     RETLW DIE5
-0D0C   343F           00156     RETLW DIE6
-0D0D   3440           00157     RETLW DIE1
-0D0E   3412           00158     RETLW DIE2
-0D0F   344C           00159     RETLW DIE3
-0D10   342D           00160     RETLW DIE4
-0D11   346D           00161     RETLW DIE5
-0D12   343F           00162     RETLW DIE6
-0D13   3440           00163     RETLW DIE1
-0D14   3412           00164     RETLW DIE2
-0D15   344C           00165     RETLW DIE3
-0D16   342D           00166     RETLW DIE4
-0D17   346D           00167     RETLW DIE5
-0D18   343F           00168     RETLW DIE6
-0D19   3440           00169     RETLW DIE1
-0D1A   3412           00170     RETLW DIE2
-0D1B   344C           00171     RETLW DIE3
-0D1C   342D           00172     RETLW DIE4
-0D1D   346D           00173     RETLW DIE5
-0D1E   343F           00174     RETLW DIE6
-0D1F   3440           00175     RETLW DIE1
-0D20   3412           00176     RETLW DIE2
-0D21   344C           00177     RETLW DIE3
-0D22   342D           00178     RETLW DIE4
-0D23   346D           00179     RETLW DIE5
-0D24   343F           00180     RETLW DIE6
-0D25   3440           00181     RETLW DIE1
-0D26   3412           00182     RETLW DIE2
-0D27   344C           00183     RETLW DIE3
-0D28   342D           00184     RETLW DIE4
-0D29   346D           00185     RETLW DIE5
-0D2A   343F           00186     RETLW DIE6
-0D2B   3440           00187     RETLW DIE1
-0D2C   3412           00188     RETLW DIE2
-0D2D   344C           00189     RETLW DIE3
-0D2E   342D           00190     RETLW DIE4
-0D2F   346D           00191     RETLW DIE5
-0D30   343F           00192     RETLW DIE6
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  5
+                      00157     
+0D01   3440           00158     RETLW DIE1
+0D02   3412           00159     RETLW DIE2
+0D03   344C           00160     RETLW DIE3
+0D04   342D           00161     RETLW DIE4
+0D05   346D           00162     RETLW DIE5
+0D06   343F           00163     RETLW DIE6
+0D07   3440           00164     RETLW DIE1
+0D08   3412           00165     RETLW DIE2
+0D09   344C           00166     RETLW DIE3
+0D0A   342D           00167     RETLW DIE4
+0D0B   346D           00168     RETLW DIE5
+0D0C   343F           00169     RETLW DIE6
+0D0D   3440           00170     RETLW DIE1
+0D0E   3412           00171     RETLW DIE2
+0D0F   344C           00172     RETLW DIE3
+0D10   342D           00173     RETLW DIE4
+0D11   346D           00174     RETLW DIE5
+0D12   343F           00175     RETLW DIE6
+0D13   3440           00176     RETLW DIE1
+0D14   3412           00177     RETLW DIE2
+0D15   344C           00178     RETLW DIE3
+0D16   342D           00179     RETLW DIE4
+0D17   346D           00180     RETLW DIE5
+0D18   343F           00181     RETLW DIE6
+0D19   3440           00182     RETLW DIE1
+0D1A   3412           00183     RETLW DIE2
+0D1B   344C           00184     RETLW DIE3
+0D1C   342D           00185     RETLW DIE4
+0D1D   346D           00186     RETLW DIE5
+0D1E   343F           00187     RETLW DIE6
+0D1F   3440           00188     RETLW DIE1
+0D20   3412           00189     RETLW DIE2
+0D21   344C           00190     RETLW DIE3
+0D22   342D           00191     RETLW DIE4
+0D23   346D           00192     RETLW DIE5
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  5
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
   VALUE
 
-0D31   3440           00193     RETLW DIE1
-0D32   3412           00194     RETLW DIE2
-0D33   344C           00195     RETLW DIE3
-0D34   342D           00196     RETLW DIE4
-0D35   346D           00197     RETLW DIE5
-0D36   343F           00198     RETLW DIE6
-0D37   3440           00199     RETLW DIE1
-0D38   3412           00200     RETLW DIE2
-0D39   344C           00201     RETLW DIE3
-0D3A   342D           00202     RETLW DIE4
-0D3B   346D           00203     RETLW DIE5
-0D3C   343F           00204     RETLW DIE6
-0D3D   3440           00205     RETLW DIE1
-0D3E   3412           00206     RETLW DIE2
-0D3F   344C           00207     RETLW DIE3
-0D40   342D           00208     RETLW DIE4
-0D41   346D           00209     RETLW DIE5
-0D42   343F           00210     RETLW DIE6
-0D43   3440           00211     RETLW DIE1
-0D44   3412           00212     RETLW DIE2
-0D45   344C           00213     RETLW DIE3
-0D46   342D           00214     RETLW DIE4
-0D47   346D           00215     RETLW DIE5
-0D48   343F           00216     RETLW DIE6
-0D49   3440           00217     RETLW DIE1
-0D4A   3412           00218     RETLW DIE2
-0D4B   344C           00219     RETLW DIE3
-0D4C   342D           00220     RETLW DIE4
-0D4D   346D           00221     RETLW DIE5
-0D4E   343F           00222     RETLW DIE6
-0D4F   3440           00223     RETLW DIE1
-0D50   3412           00224     RETLW DIE2
-0D51   344C           00225     RETLW DIE3
-0D52   342D           00226     RETLW DIE4
-0D53   346D           00227     RETLW DIE5
-0D54   343F           00228     RETLW DIE6
-0D55   3440           00229     RETLW DIE1
-0D56   3412           00230     RETLW DIE2
-0D57   344C           00231     RETLW DIE3
-0D58   342D           00232     RETLW DIE4
-0D59   346D           00233     RETLW DIE5
-0D5A   343F           00234     RETLW DIE6
-0D5B   3440           00235     RETLW DIE1
-0D5C   3412           00236     RETLW DIE2
-0D5D   344C           00237     RETLW DIE3
-0D5E   342D           00238     RETLW DIE4
-0D5F   346D           00239     RETLW DIE5
-0D60   343F           00240     RETLW DIE6
-0D61   3440           00241     RETLW DIE1
-0D62   3412           00242     RETLW DIE2
-0D63   344C           00243     RETLW DIE3
-0D64   342D           00244     RETLW DIE4
-0D65   346D           00245     RETLW DIE5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  6
+0D24   343F           00193     RETLW DIE6
+0D25   3440           00194     RETLW DIE1
+0D26   3412           00195     RETLW DIE2
+0D27   344C           00196     RETLW DIE3
+0D28   342D           00197     RETLW DIE4
+0D29   346D           00198     RETLW DIE5
+0D2A   343F           00199     RETLW DIE6
+0D2B   3440           00200     RETLW DIE1
+0D2C   3412           00201     RETLW DIE2
+0D2D   344C           00202     RETLW DIE3
+0D2E   342D           00203     RETLW DIE4
+0D2F   346D           00204     RETLW DIE5
+0D30   343F           00205     RETLW DIE6
+0D31   3440           00206     RETLW DIE1
+0D32   3412           00207     RETLW DIE2
+0D33   344C           00208     RETLW DIE3
+0D34   342D           00209     RETLW DIE4
+0D35   346D           00210     RETLW DIE5
+0D36   343F           00211     RETLW DIE6
+0D37   3440           00212     RETLW DIE1
+0D38   3412           00213     RETLW DIE2
+0D39   344C           00214     RETLW DIE3
+0D3A   342D           00215     RETLW DIE4
+0D3B   346D           00216     RETLW DIE5
+0D3C   343F           00217     RETLW DIE6
+0D3D   3440           00218     RETLW DIE1
+0D3E   3412           00219     RETLW DIE2
+0D3F   344C           00220     RETLW DIE3
+0D40   342D           00221     RETLW DIE4
+0D41   346D           00222     RETLW DIE5
+0D42   343F           00223     RETLW DIE6
+0D43   3440           00224     RETLW DIE1
+0D44   3412           00225     RETLW DIE2
+0D45   344C           00226     RETLW DIE3
+0D46   342D           00227     RETLW DIE4
+0D47   346D           00228     RETLW DIE5
+0D48   343F           00229     RETLW DIE6
+0D49   3440           00230     RETLW DIE1
+0D4A   3412           00231     RETLW DIE2
+0D4B   344C           00232     RETLW DIE3
+0D4C   342D           00233     RETLW DIE4
+0D4D   346D           00234     RETLW DIE5
+0D4E   343F           00235     RETLW DIE6
+0D4F   3440           00236     RETLW DIE1
+0D50   3412           00237     RETLW DIE2
+0D51   344C           00238     RETLW DIE3
+0D52   342D           00239     RETLW DIE4
+0D53   346D           00240     RETLW DIE5
+0D54   343F           00241     RETLW DIE6
+0D55   3440           00242     RETLW DIE1
+0D56   3412           00243     RETLW DIE2
+0D57   344C           00244     RETLW DIE3
+0D58   342D           00245     RETLW DIE4
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  6
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
   VALUE
 
-0D66   343F           00246     RETLW DIE6
-0D67   3440           00247     RETLW DIE1
-0D68   3412           00248     RETLW DIE2
-0D69   344C           00249     RETLW DIE3
-0D6A   342D           00250     RETLW DIE4
-0D6B   346D           00251     RETLW DIE5
-0D6C   343F           00252     RETLW DIE6
-0D6D   3440           00253     RETLW DIE1
-0D6E   3412           00254     RETLW DIE2
-0D6F   344C           00255     RETLW DIE3
-0D70   342D           00256     RETLW DIE4
-0D71   346D           00257     RETLW DIE5
-0D72   343F           00258     RETLW DIE6
-0D73   3440           00259     RETLW DIE1
-0D74   3412           00260     RETLW DIE2
-0D75   344C           00261     RETLW DIE3
-0D76   342D           00262     RETLW DIE4
-0D77   346D           00263     RETLW DIE5
-0D78   343F           00264     RETLW DIE6
-0D79   3440           00265     RETLW DIE1
-0D7A   3412           00266     RETLW DIE2
-0D7B   344C           00267     RETLW DIE3
-0D7C   342D           00268     RETLW DIE4
-0D7D   346D           00269     RETLW DIE5
-0D7E   343F           00270     RETLW DIE6
-0D7F   3440           00271     RETLW DIE1
-0D80   3412           00272     RETLW DIE2
-0D81   344C           00273     RETLW DIE3
-0D82   342D           00274     RETLW DIE4
-0D83   346D           00275     RETLW DIE5
-0D84   343F           00276     RETLW DIE6
-0D85   3440           00277     RETLW DIE1
-0D86   3412           00278     RETLW DIE2
-0D87   344C           00279     RETLW DIE3
-0D88   342D           00280     RETLW DIE4
-0D89   346D           00281     RETLW DIE5
-0D8A   343F           00282     RETLW DIE6
-0D8B   3440           00283     RETLW DIE1
-0D8C   3412           00284     RETLW DIE2
-0D8D   344C           00285     RETLW DIE3
-0D8E   342D           00286     RETLW DIE4
-0D8F   346D           00287     RETLW DIE5
-0D90   343F           00288     RETLW DIE6
-0D91   3440           00289     RETLW DIE1
-0D92   3412           00290     RETLW DIE2
-0D93   344C           00291     RETLW DIE3
-0D94   342D           00292     RETLW DIE4
-0D95   346D           00293     RETLW DIE5
-0D96   343F           00294     RETLW DIE6
-0D97   3440           00295     RETLW DIE1
-0D98   3412           00296     RETLW DIE2
-0D99   344C           00297     RETLW DIE3
-0D9A   342D           00298     RETLW DIE4
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  7
+0D59   346D           00246     RETLW DIE5
+0D5A   343F           00247     RETLW DIE6
+0D5B   3440           00248     RETLW DIE1
+0D5C   3412           00249     RETLW DIE2
+0D5D   344C           00250     RETLW DIE3
+0D5E   342D           00251     RETLW DIE4
+0D5F   346D           00252     RETLW DIE5
+0D60   343F           00253     RETLW DIE6
+0D61   3440           00254     RETLW DIE1
+0D62   3412           00255     RETLW DIE2
+0D63   344C           00256     RETLW DIE3
+0D64   342D           00257     RETLW DIE4
+0D65   346D           00258     RETLW DIE5
+0D66   343F           00259     RETLW DIE6
+0D67   3440           00260     RETLW DIE1
+0D68   3412           00261     RETLW DIE2
+0D69   344C           00262     RETLW DIE3
+0D6A   342D           00263     RETLW DIE4
+0D6B   346D           00264     RETLW DIE5
+0D6C   343F           00265     RETLW DIE6
+0D6D   3440           00266     RETLW DIE1
+0D6E   3412           00267     RETLW DIE2
+0D6F   344C           00268     RETLW DIE3
+0D70   342D           00269     RETLW DIE4
+0D71   346D           00270     RETLW DIE5
+0D72   343F           00271     RETLW DIE6
+0D73   3440           00272     RETLW DIE1
+0D74   3412           00273     RETLW DIE2
+0D75   344C           00274     RETLW DIE3
+0D76   342D           00275     RETLW DIE4
+0D77   346D           00276     RETLW DIE5
+0D78   343F           00277     RETLW DIE6
+0D79   3440           00278     RETLW DIE1
+0D7A   3412           00279     RETLW DIE2
+0D7B   344C           00280     RETLW DIE3
+0D7C   342D           00281     RETLW DIE4
+0D7D   346D           00282     RETLW DIE5
+0D7E   343F           00283     RETLW DIE6
+0D7F   3440           00284     RETLW DIE1
+0D80   3412           00285     RETLW DIE2
+0D81   344C           00286     RETLW DIE3
+0D82   342D           00287     RETLW DIE4
+0D83   346D           00288     RETLW DIE5
+0D84   343F           00289     RETLW DIE6
+0D85   3440           00290     RETLW DIE1
+0D86   3412           00291     RETLW DIE2
+0D87   344C           00292     RETLW DIE3
+0D88   342D           00293     RETLW DIE4
+0D89   346D           00294     RETLW DIE5
+0D8A   343F           00295     RETLW DIE6
+0D8B   3440           00296     RETLW DIE1
+0D8C   3412           00297     RETLW DIE2
+0D8D   344C           00298     RETLW DIE3
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  7
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
   VALUE
 
-0D9B   346D           00299     RETLW DIE5
-0D9C   343F           00300     RETLW DIE6
-0D9D   3440           00301     RETLW DIE1
-0D9E   3412           00302     RETLW DIE2
-0D9F   344C           00303     RETLW DIE3
-0DA0   342D           00304     RETLW DIE4
-0DA1   346D           00305     RETLW DIE5
-0DA2   343F           00306     RETLW DIE6
-0DA3   3440           00307     RETLW DIE1
-0DA4   3412           00308     RETLW DIE2
-0DA5   344C           00309     RETLW DIE3
-0DA6   342D           00310     RETLW DIE4
-0DA7   346D           00311     RETLW DIE5
-0DA8   343F           00312     RETLW DIE6
-0DA9   3440           00313     RETLW DIE1
-0DAA   3412           00314     RETLW DIE2
-0DAB   344C           00315     RETLW DIE3
-0DAC   342D           00316     RETLW DIE4
-0DAD   346D           00317     RETLW DIE5
-0DAE   343F           00318     RETLW DIE6
-0DAF   3440           00319     RETLW DIE1
-0DB0   3412           00320     RETLW DIE2
-0DB1   344C           00321     RETLW DIE3
-0DB2   342D           00322     RETLW DIE4
-0DB3   346D           00323     RETLW DIE5
-0DB4   343F           00324     RETLW DIE6
-0DB5   3440           00325     RETLW DIE1
-0DB6   3412           00326     RETLW DIE2
-0DB7   344C           00327     RETLW DIE3
-0DB8   342D           00328     RETLW DIE4
-0DB9   346D           00329     RETLW DIE5
-0DBA   343F           00330     RETLW DIE6
-0DBB   3440           00331     RETLW DIE1
-0DBC   3412           00332     RETLW DIE2
-0DBD   344C           00333     RETLW DIE3
-0DBE   342D           00334     RETLW DIE4
-0DBF   346D           00335     RETLW DIE5
-0DC0   343F           00336     RETLW DIE6
-0DC1   3440           00337     RETLW DIE1
-0DC2   3412           00338     RETLW DIE2
-0DC3   344C           00339     RETLW DIE3
-0DC4   342D           00340     RETLW DIE4
-0DC5   346D           00341     RETLW DIE5
-0DC6   343F           00342     RETLW DIE6
-0DC7   3440           00343     RETLW DIE1
-0DC8   3412           00344     RETLW DIE2
-0DC9   344C           00345     RETLW DIE3
-0DCA   342D           00346     RETLW DIE4
-0DCB   346D           00347     RETLW DIE5
-0DCC   343F           00348     RETLW DIE6
-0DCD   3440           00349     RETLW DIE1
-0DCE   3412           00350     RETLW DIE2
-0DCF   344C           00351     RETLW DIE3
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  8
+0D8E   342D           00299     RETLW DIE4
+0D8F   346D           00300     RETLW DIE5
+0D90   343F           00301     RETLW DIE6
+0D91   3440           00302     RETLW DIE1
+0D92   3412           00303     RETLW DIE2
+0D93   344C           00304     RETLW DIE3
+0D94   342D           00305     RETLW DIE4
+0D95   346D           00306     RETLW DIE5
+0D96   343F           00307     RETLW DIE6
+0D97   3440           00308     RETLW DIE1
+0D98   3412           00309     RETLW DIE2
+0D99   344C           00310     RETLW DIE3
+0D9A   342D           00311     RETLW DIE4
+0D9B   346D           00312     RETLW DIE5
+0D9C   343F           00313     RETLW DIE6
+0D9D   3440           00314     RETLW DIE1
+0D9E   3412           00315     RETLW DIE2
+0D9F   344C           00316     RETLW DIE3
+0DA0   342D           00317     RETLW DIE4
+0DA1   346D           00318     RETLW DIE5
+0DA2   343F           00319     RETLW DIE6
+0DA3   3440           00320     RETLW DIE1
+0DA4   3412           00321     RETLW DIE2
+0DA5   344C           00322     RETLW DIE3
+0DA6   342D           00323     RETLW DIE4
+0DA7   346D           00324     RETLW DIE5
+0DA8   343F           00325     RETLW DIE6
+0DA9   3440           00326     RETLW DIE1
+0DAA   3412           00327     RETLW DIE2
+0DAB   344C           00328     RETLW DIE3
+0DAC   342D           00329     RETLW DIE4
+0DAD   346D           00330     RETLW DIE5
+0DAE   343F           00331     RETLW DIE6
+0DAF   3440           00332     RETLW DIE1
+0DB0   3412           00333     RETLW DIE2
+0DB1   344C           00334     RETLW DIE3
+0DB2   342D           00335     RETLW DIE4
+0DB3   346D           00336     RETLW DIE5
+0DB4   343F           00337     RETLW DIE6
+0DB5   3440           00338     RETLW DIE1
+0DB6   3412           00339     RETLW DIE2
+0DB7   344C           00340     RETLW DIE3
+0DB8   342D           00341     RETLW DIE4
+0DB9   346D           00342     RETLW DIE5
+0DBA   343F           00343     RETLW DIE6
+0DBB   3440           00344     RETLW DIE1
+0DBC   3412           00345     RETLW DIE2
+0DBD   344C           00346     RETLW DIE3
+0DBE   342D           00347     RETLW DIE4
+0DBF   346D           00348     RETLW DIE5
+0DC0   343F           00349     RETLW DIE6
+0DC1   3440           00350     RETLW DIE1
+0DC2   3412           00351     RETLW DIE2
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  8
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
   VALUE
 
-0DD0   342D           00352     RETLW DIE4
-0DD1   346D           00353     RETLW DIE5
-0DD2   343F           00354     RETLW DIE6
-0DD3   3440           00355     RETLW DIE1
-0DD4   3412           00356     RETLW DIE2
-0DD5   344C           00357     RETLW DIE3
-0DD6   342D           00358     RETLW DIE4
-0DD7   346D           00359     RETLW DIE5
-0DD8   343F           00360     RETLW DIE6
-0DD9   3440           00361     RETLW DIE1
-0DDA   3412           00362     RETLW DIE2
-0DDB   344C           00363     RETLW DIE3
-0DDC   342D           00364     RETLW DIE4
-0DDD   346D           00365     RETLW DIE5
-0DDE   343F           00366     RETLW DIE6
-0DDF   3440           00367     RETLW DIE1
-0DE0   3412           00368     RETLW DIE2
-0DE1   344C           00369     RETLW DIE3
-0DE2   342D           00370     RETLW DIE4
-0DE3   346D           00371     RETLW DIE5
-0DE4   343F           00372     RETLW DIE6
-0DE5   3440           00373     RETLW DIE1
-0DE6   3412           00374     RETLW DIE2
-0DE7   344C           00375     RETLW DIE3
-0DE8   342D           00376     RETLW DIE4
-0DE9   346D           00377     RETLW DIE5
-0DEA   343F           00378     RETLW DIE6
-0DEB   3440           00379     RETLW DIE1
-0DEC   3412           00380     RETLW DIE2
-0DED   344C           00381     RETLW DIE3
-0DEE   342D           00382     RETLW DIE4
-0DEF   346D           00383     RETLW DIE5
-0DF0   343F           00384     RETLW DIE6
-0DF1   3440           00385     RETLW DIE1
-0DF2   3412           00386     RETLW DIE2
-0DF3   344C           00387     RETLW DIE3
-0DF4   342D           00388     RETLW DIE4
-0DF5   346D           00389     RETLW DIE5
-0DF6   343F           00390     RETLW DIE6
-0DF7   3440           00391     RETLW DIE1
-0DF8   3412           00392     RETLW DIE2
-0DF9   344C           00393     RETLW DIE3
-0DFA   342D           00394     RETLW DIE4
-0DFB   346D           00395     RETLW DIE5
-0DFC   343F           00396     RETLW DIE6
-0DFD   3440           00397     RETLW DIE1
-0DFE   3412           00398     RETLW DIE2
-0DFF   344C           00399     RETLW DIE3
-                      00400     
-                      00401 
-                      00402     END
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE  9
+0DC3   344C           00352     RETLW DIE3
+0DC4   342D           00353     RETLW DIE4
+0DC5   346D           00354     RETLW DIE5
+0DC6   343F           00355     RETLW DIE6
+0DC7   3440           00356     RETLW DIE1
+0DC8   3412           00357     RETLW DIE2
+0DC9   344C           00358     RETLW DIE3
+0DCA   342D           00359     RETLW DIE4
+0DCB   346D           00360     RETLW DIE5
+0DCC   343F           00361     RETLW DIE6
+0DCD   3440           00362     RETLW DIE1
+0DCE   3412           00363     RETLW DIE2
+0DCF   344C           00364     RETLW DIE3
+0DD0   342D           00365     RETLW DIE4
+0DD1   346D           00366     RETLW DIE5
+0DD2   343F           00367     RETLW DIE6
+0DD3   3440           00368     RETLW DIE1
+0DD4   3412           00369     RETLW DIE2
+0DD5   344C           00370     RETLW DIE3
+0DD6   342D           00371     RETLW DIE4
+0DD7   346D           00372     RETLW DIE5
+0DD8   343F           00373     RETLW DIE6
+0DD9   3440           00374     RETLW DIE1
+0DDA   3412           00375     RETLW DIE2
+0DDB   344C           00376     RETLW DIE3
+0DDC   342D           00377     RETLW DIE4
+0DDD   346D           00378     RETLW DIE5
+0DDE   343F           00379     RETLW DIE6
+0DDF   3440           00380     RETLW DIE1
+0DE0   3412           00381     RETLW DIE2
+0DE1   344C           00382     RETLW DIE3
+0DE2   342D           00383     RETLW DIE4
+0DE3   346D           00384     RETLW DIE5
+0DE4   343F           00385     RETLW DIE6
+0DE5   3440           00386     RETLW DIE1
+0DE6   3412           00387     RETLW DIE2
+0DE7   344C           00388     RETLW DIE3
+0DE8   342D           00389     RETLW DIE4
+0DE9   346D           00390     RETLW DIE5
+0DEA   343F           00391     RETLW DIE6
+0DEB   3440           00392     RETLW DIE1
+0DEC   3412           00393     RETLW DIE2
+0DED   344C           00394     RETLW DIE3
+0DEE   342D           00395     RETLW DIE4
+0DEF   346D           00396     RETLW DIE5
+0DF0   343F           00397     RETLW DIE6
+0DF1   3440           00398     RETLW DIE1
+0DF2   3412           00399     RETLW DIE2
+0DF3   344C           00400     RETLW DIE3
+0DF4   342D           00401     RETLW DIE4
+0DF5   346D           00402     RETLW DIE5
+0DF6   343F           00403     RETLW DIE6
+0DF7   3440           00404     RETLW DIE1
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  9
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+0DF8   3412           00405     RETLW DIE2
+0DF9   344C           00406     RETLW DIE3
+0DFA   342D           00407     RETLW DIE4
+0DFB   346D           00408     RETLW DIE5
+0DFC   343F           00409     RETLW DIE6
+0DFD   3440           00410     RETLW DIE1
+0DFE   3412           00411     RETLW DIE2
+0DFF   344C           00412     RETLW DIE3
+                      00413     
+                      00414 
+                      00415     END
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 10
 
 
 SYMBOL TABLE
@@ -527,7 +546,7 @@ C                                 CONSTANT      00000000              0
 C1CH0                             CONSTANT      00000000              0
 C1CH1                             CONSTANT      00000001              1
 C1IE                              CONSTANT      00000005              5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 10
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 11
 
 
 SYMBOL TABLE
@@ -586,7 +605,7 @@ DIE3                              CONSTANT      0000004C             76
 DIE4                              CONSTANT      0000002D             45
 DIE5                              CONSTANT      0000006D            109
 DIE6                              CONSTANT      0000003F             63
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 11
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 12
 
 
 SYMBOL TABLE
@@ -624,6 +643,7 @@ I2C_START                         CONSTANT      00000003              3
 I2C_STOP                          CONSTANT      00000004              4
 INDF                              CONSTANT      00000000              0
 INTCON                            CONSTANT      0000000B             11
+INTD                              CONSTANT      00000074            116
 INTE                              CONSTANT      00000004              4
 INTEDG                            CONSTANT      00000006              6
 INTF                              CONSTANT      00000001              1
@@ -644,21 +664,21 @@ IOCA5                             CONSTANT      00000005              5
 IOCB                              CONSTANT      00000116            278
 IOCB4                             CONSTANT      00000004              4
 IOCB5                             CONSTANT      00000005              5
-IOCB6                             CONSTANT      00000006              6
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 12
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 13
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+IOCB6                             CONSTANT      00000006              6
 IOCB7                             CONSTANT      00000007              7
 IRCF0                             CONSTANT      00000004              4
 IRCF1                             CONSTANT      00000005              5
 IRCF2                             CONSTANT      00000006              6
 IRP                               CONSTANT      00000007              7
 LFSR                              CONSTANT      00000070            112
-LOOP                              ADDRESS       0000003E             62
+LOOP                              ADDRESS       00000040             64
 LTS                               CONSTANT      00000001              1
 LUT                               ADDRESS       00000D00           3328
 MC1OUT                            CONSTANT      00000007              7
@@ -703,14 +723,14 @@ PDC2                              CONSTANT      00000002              2
 PDC3                              CONSTANT      00000003              3
 PDC4                              CONSTANT      00000004              4
 PDC5                              CONSTANT      00000005              5
-PDC6                              CONSTANT      00000006              6
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 13
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 14
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+PDC6                              CONSTANT      00000006              6
 PEIE                              CONSTANT      00000006              6
 PIE1                              CONSTANT      0000008C            140
 PIE2                              CONSTANT      0000008D            141
@@ -762,14 +782,14 @@ RCSTA                             CONSTANT      00000018             24
 RD                                CONSTANT      00000000              0
 READ_WRITE                        CONSTANT      00000002              2
 RP0                               CONSTANT      00000005              5
-RP1                               CONSTANT      00000006              6
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 14
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 15
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+RP1                               CONSTANT      00000006              6
 RX9                               CONSTANT      00000006              6
 RX9D                              CONSTANT      00000000              0
 R_NOT_W                           CONSTANT      00000002              2
@@ -821,14 +841,14 @@ T1GINV                            CONSTANT      00000007              7
 T1GSS                             CONSTANT      00000001              1
 T1IE                              CONSTANT      00000000              0
 T1IF                              CONSTANT      00000000              0
-T1OSCEN                           CONSTANT      00000003              3
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 15
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 16
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+T1OSCEN                           CONSTANT      00000003              3
 T2CKPS0                           CONSTANT      00000000              0
 T2CKPS1                           CONSTANT      00000001              1
 T2CON                             CONSTANT      00000012             18
@@ -880,14 +900,14 @@ TUN1                              CONSTANT      00000001              1
 TUN2                              CONSTANT      00000002              2
 TUN3                              CONSTANT      00000003              3
 TUN4                              CONSTANT      00000004              4
-TW                                CONSTANT      00000071            113
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 16
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 17
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+TW                                CONSTANT      00000071            113
 TX9                               CONSTANT      00000006              6
 TX9D                              CONSTANT      00000000              0
 TXEN                              CONSTANT      00000005              5
@@ -939,14 +959,14 @@ _BOD_NSLEEP                       CONSTANT      00003EFF          16127
 _BOD_OFF                          CONSTANT      00003CFF          15615
 _BOD_ON                           CONSTANT      00003FFF          16383
 _BOD_SBODEN                       CONSTANT      00003DFF          15871
-_BOREN_NSLEEP                     CONSTANT      00003EFF          16127
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 17
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 18
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+_BOREN_NSLEEP                     CONSTANT      00003EFF          16127
 _BOREN_OFF                        CONSTANT      00003CFF          15615
 _BOREN_ON                         CONSTANT      00003FFF          16383
 _BOREN_SBODEN                     CONSTANT      00003DFF          15871
@@ -998,14 +1018,14 @@ _WDT_ON                           CONSTANT      00003FFF          16383
 _XT_OSC                           CONSTANT      00003FF9          16377
 __14_BIT                          CONSTANT      00000001              1
 __16F690                          CONSTANT      00000001              1
-__ACTIVE_BANK_ADDR                VARIABLE      FFFFFFFF             -1
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 18
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 19
 
 
 SYMBOL TABLE
   LABEL                              TYPE        VALUE         VALUE          VALUE
                                                  (hex)         (dec)          (text)
 
+__ACTIVE_BANK_ADDR                VARIABLE      FFFFFFFF             -1
 __ACTIVE_PAGE_ADDR                VARIABLE      FFFFFFFF             -1
 __ASSUMED_BANK_ADDR               VARIABLE      FFFFFFFF             -1
 __BANK_0                          CONSTANT      00000000              0
@@ -1052,22 +1072,22 @@ __WHILE_LOOP_COUNT_MAX            CONSTANT      000000FF            255
 MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
 
 0000 : X---XXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
-0040 : XXXXXXXXXXXX---- ---------------- ---------------- ----------------
+0040 : XXXXXXXXXXXXXXXX XXX------------- ---------------- ----------------
 0D00 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0D40 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0D80 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0DC0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
-2000 : -------X-------- ---------------- ---------------- ----------------
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/27/2026  01:12:36 AM     PAGE 19
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 20
 
 
 MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
 
+2000 : -------X-------- ---------------- ---------------- ----------------
 
 All other memory blocks unused.
 
-Program Memory Words Used:   329
-Program Memory Words Free:  3767
+Program Memory Words Used:   336
+Program Memory Words Free:  3760
 
 
 Errors   :     0
