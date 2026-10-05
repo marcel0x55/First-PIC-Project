@@ -1,4 +1,4 @@
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  1
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  1
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -57,7 +57,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 000C   0870           00040     MOVF LFSR,W
 000D   2500           00041     CALL LUT    ;FOR FASTER EXECUTION AND BECAUSE WE HAVE A LOT OF UNUSED SPACE ON THE FLASH I'VE OPTED 
                             TO USE A LOOKUP TABLE INSTEAD OF CALCULATING LFSR % 6 AND PUTTING THE APROPRIATE SIGNALS ON PORTC
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  2
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  2
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -116,7 +116,7 @@ Message[1302]: RAM Bank undefined in this chunk of code. Ensure that bank bits a
 002A   121F           00089     BCF ADCON0,CHS2 ;-|
 002B   169F           00090     BSF ADCON0,CHS3 ;-|-SELECT AN11 AS INPUT FOR ADC
                       00091     
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  3
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  3
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -175,7 +175,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
                       00140 
                       00141     ;SOFTWARE DEBOUNCE FOR THE BUTTON, PREVENTS MULTIPLE INTERRUPTS ON THE SAME PRESS
 004D   138B           00142     BCF INTCON,GIE  ;DISABLE GLOBAL INTRERRUPTS
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  4
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  4
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -234,7 +234,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 0D21   344C           00190     RETLW DIE3
 0D22   342D           00191     RETLW DIE4
 0D23   346D           00192     RETLW DIE5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  5
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  5
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -293,7 +293,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 0D56   3412           00243     RETLW DIE2
 0D57   344C           00244     RETLW DIE3
 0D58   342D           00245     RETLW DIE4
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  6
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  6
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -352,7 +352,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 0D8B   3440           00296     RETLW DIE1
 0D8C   3412           00297     RETLW DIE2
 0D8D   344C           00298     RETLW DIE3
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  7
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  7
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -411,7 +411,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 0DC0   343F           00349     RETLW DIE6
 0DC1   3440           00350     RETLW DIE1
 0DC2   3412           00351     RETLW DIE2
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  8
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  8
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -470,7 +470,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
 0DF5   346D           00402     RETLW DIE5
 0DF6   343F           00403     RETLW DIE6
 0DF7   3440           00404     RETLW DIE1
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE  9
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE  9
 
 
 LOC    OBJECT CODE    LINE  SOURCE TEXT
@@ -487,7 +487,7 @@ LOC    OBJECT CODE    LINE  SOURCE TEXT
                       00413     
                       00414 
                       00415     END
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 10
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 10
 
 
 SYMBOL TABLE
@@ -546,7 +546,7 @@ C                                 CONSTANT      00000000              0
 C1CH0                             CONSTANT      00000000              0
 C1CH1                             CONSTANT      00000001              1
 C1IE                              CONSTANT      00000005              5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 11
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 11
 
 
 SYMBOL TABLE
@@ -605,7 +605,7 @@ DIE3                              CONSTANT      0000004C             76
 DIE4                              CONSTANT      0000002D             45
 DIE5                              CONSTANT      0000006D            109
 DIE6                              CONSTANT      0000003F             63
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 12
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 12
 
 
 SYMBOL TABLE
@@ -664,7 +664,7 @@ IOCA5                             CONSTANT      00000005              5
 IOCB                              CONSTANT      00000116            278
 IOCB4                             CONSTANT      00000004              4
 IOCB5                             CONSTANT      00000005              5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 13
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 13
 
 
 SYMBOL TABLE
@@ -723,7 +723,7 @@ PDC2                              CONSTANT      00000002              2
 PDC3                              CONSTANT      00000003              3
 PDC4                              CONSTANT      00000004              4
 PDC5                              CONSTANT      00000005              5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 14
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 14
 
 
 SYMBOL TABLE
@@ -782,7 +782,7 @@ RCSTA                             CONSTANT      00000018             24
 RD                                CONSTANT      00000000              0
 READ_WRITE                        CONSTANT      00000002              2
 RP0                               CONSTANT      00000005              5
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 15
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 15
 
 
 SYMBOL TABLE
@@ -841,7 +841,7 @@ T1GINV                            CONSTANT      00000007              7
 T1GSS                             CONSTANT      00000001              1
 T1IE                              CONSTANT      00000000              0
 T1IF                              CONSTANT      00000000              0
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 16
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 16
 
 
 SYMBOL TABLE
@@ -900,7 +900,7 @@ TUN1                              CONSTANT      00000001              1
 TUN2                              CONSTANT      00000002              2
 TUN3                              CONSTANT      00000003              3
 TUN4                              CONSTANT      00000004              4
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 17
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 17
 
 
 SYMBOL TABLE
@@ -959,7 +959,7 @@ _BOD_NSLEEP                       CONSTANT      00003EFF          16127
 _BOD_OFF                          CONSTANT      00003CFF          15615
 _BOD_ON                           CONSTANT      00003FFF          16383
 _BOD_SBODEN                       CONSTANT      00003DFF          15871
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 18
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 18
 
 
 SYMBOL TABLE
@@ -1018,7 +1018,7 @@ _WDT_ON                           CONSTANT      00003FFF          16383
 _XT_OSC                           CONSTANT      00003FF9          16377
 __14_BIT                          CONSTANT      00000001              1
 __16F690                          CONSTANT      00000001              1
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 19
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 19
 
 
 SYMBOL TABLE
@@ -1077,7 +1077,7 @@ MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
 0D40 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0D80 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0DC0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
-gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   09/29/2026  02:48:22 PM     PAGE 20
+gpasm-1.5.2 #1325 (Jul 12 2024)       die.asm   10/05/2026  07:41:21 PM     PAGE 20
 
 
 MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
