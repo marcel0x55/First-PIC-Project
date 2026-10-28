@@ -7,13 +7,16 @@ BUILD_DIR := build
 GPASM     := gpasm -a inhx32
 PK2CMD    := pk2cmd -B/usr/share/pk2/
 
-# Handle MCU Selection (AUTODETECT or unset results in -P)
+# Handle MCU Selection
 ifeq ($(MCU),AUTODETECT)
     MCU_FLAG := -P
+    GPASM_FLAG :=
 else ifdef MCU
     MCU_FLAG := -P$(MCU)
+    GPASM_FLAG := -p $(MCU)
 else
     MCU_FLAG := -P
+    GPASM_FLAG :=
 endif
 
 .PHONY: all assemble flash power poweroff clean check-src menuconfig
@@ -30,7 +33,7 @@ $(BUILD_DIR):
 
 assemble: check-src | $(BUILD_DIR)
 	@echo "==> Assembling $(firstword $(SRC)) into $(BUILD_DIR)/..."
-	$(GPASM) $(firstword $(SRC)) -o $(BUILD_DIR)/$(TARGET).hex
+	$(GPASM) $(GPASM_FLAG) $(firstword $(SRC)) -o $(BUILD_DIR)/$(TARGET).hex
 
 flash: assemble
 	@echo "==> Flashing $(BUILD_DIR)/$(TARGET).hex..."
@@ -87,8 +90,6 @@ menuconfig:
 			SEARCH_SELECTED=$$(whiptail --title "Search Results" --menu "Matches for '$$SEARCH_TERM':" 22 78 12 SEARCH_AGAIN New_Search $$SEARCH_RESULTS 3>&1 1>&2 2>&3); \
 			if [ -z "$$SEARCH_SELECTED" ]; then continue; fi; \
 			if [ "$$SEARCH_SELECTED" = "SEARCH_AGAIN" ]; then \
-				# Selecting SEARCH_AGAIN cancels out of this if-block and restarts the while loop, \
-				# but we want to go straight back to the search prompt, so we inject a pseudo-flag \
 				SELECTED_MCU="SEARCH"; \
 				continue; \
 			fi; \
@@ -96,6 +97,10 @@ menuconfig:
 		fi; \
 		MAIN_LOOP=0; \
 	done; \
+	\
+	if [ "$$SELECTED_MCU" = "AUTODETECT" ]; then \
+		whiptail --title "Notice: GPASM Processor Directive" --msgbox "You selected AUTODETECT.\n\nSince the Makefile won't know the exact MCU to pass to gpasm, you MUST specify the processor in your assembly source code (e.g., 'LIST p=16f690') for it to assemble correctly." 12 65 3>&1 1>&2 2>&3; \
+	fi; \
 	\
 	# 2. VDD Voltage Selection Menu \
 	VDD_MENU="UNSET Target_Self-Powered_(Safe) 5.0 5.0V_Power_Supply 3.3 3.3V_Power_Supply 2.5 2.5V_Power_Supply CUSTOM Enter_Arbitrary_Voltage"; \
