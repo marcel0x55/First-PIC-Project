@@ -1,6 +1,6 @@
--include config.mk
+-include src/config.mk
 
-SRC       := $(wildcard *.asm)
+SRC       := $(wildcard src/*.asm)
 TARGET    := $(basename $(notdir $(firstword $(SRC))))
 BUILD_DIR := build
 
@@ -22,7 +22,7 @@ all: assemble
 
 check-src:
 ifeq ($(SRC),)
-	$(error No .asm source file found in current directory)
+	$(error No .asm source file found in src/ directory)
 endif
 
 $(BUILD_DIR):
@@ -63,30 +63,39 @@ menuconfig:
 		print part, (details == "" ? "" : details "_") "(ID:" devid ")"; \
 	}'); \
 	if [ -n "$$PARSED_LIST" ]; then \
-		MENU_ITEMS="AUTODETECT Auto-detect_Target MANUAL_ENTRY Manual_Input_/_Search $$PARSED_LIST"; \
+		MENU_ITEMS="AUTODETECT Auto-detect_Target SEARCH Search_Device_List $$PARSED_LIST"; \
 	else \
 		MCUS="PIC16F690 PIC16F688 PIC16F684 PIC16F887 PIC18F2550 PIC18F4550"; \
-		MENU_ITEMS="AUTODETECT Auto-detect_Target MANUAL_ENTRY Manual_Input_/_Search"; \
+		MENU_ITEMS="AUTODETECT Auto-detect_Target SEARCH Search_Device_List"; \
 		for mcu in $$MCUS; do MENU_ITEMS="$$MENU_ITEMS $$mcu -"; done; \
 	fi; \
 	\
 	PROMPT="Select Target MCU:\n\n  MCU PART           FAMILY / ALIAS & DEVICE ID\n  --------------------------------------------------"; \
-	SELECTED_MCU=$$(whiptail --title "PIC Target Selection" --menu "$$PROMPT" 22 78 12 $$MENU_ITEMS 3>&1 1>&2 2>&3); \
-	if [ -z "$$SELECTED_MCU" ]; then echo "Configuration canceled."; exit 1; fi; \
-	\
-	# If manual entry chosen, prompt with input box & validate against device list \
-	if [ "$$SELECTED_MCU" = "MANUAL_ENTRY" ]; then \
-		MANUAL_MCU=$$(whiptail --title "Manual MCU Entry" --inputbox "Enter PIC MCU name (e.g., PIC16F690):" 10 60 3>&1 1>&2 2>&3); \
-		if [ -z "$$MANUAL_MCU" ]; then echo "Configuration canceled."; exit 1; fi; \
-		MATCH=$$(echo "$$PARSED_LIST" | grep -i -w "$$MANUAL_MCU" | awk '{print $$1}' | head -n 1); \
-		if [ -n "$$MATCH" ]; then \
-			SELECTED_MCU="$$MATCH"; \
-		else \
-			whiptail --title "MCU Not Recognized" --yesno "'$$MANUAL_MCU' was not found in PK2DeviceFile.dat.\n\nDo you want to continue anyway?" 12 65 3>&1 1>&2 2>&3; \
-			if [ $$? -ne 0 ]; then echo "Configuration canceled."; exit 1; fi; \
-			SELECTED_MCU="$$MANUAL_MCU"; \
+	MAIN_LOOP=1; \
+	while [ $$MAIN_LOOP -eq 1 ]; do \
+		SELECTED_MCU=$$(whiptail --title "PIC Target Selection" --menu "$$PROMPT" 22 78 12 $$MENU_ITEMS 3>&1 1>&2 2>&3); \
+		if [ -z "$$SELECTED_MCU" ]; then echo "Configuration canceled."; exit 1; fi; \
+		\
+		if [ "$$SELECTED_MCU" = "SEARCH" ]; then \
+			SEARCH_TERM=$$(whiptail --title "Search MCU" --inputbox "Enter part name or family to search (e.g., PIC16F6):" 10 60 3>&1 1>&2 2>&3); \
+			if [ -z "$$SEARCH_TERM" ]; then continue; fi; \
+			SEARCH_RESULTS=$$(echo "$$PARSED_LIST" | grep -i "$$SEARCH_TERM"); \
+			if [ -z "$$SEARCH_RESULTS" ]; then \
+				whiptail --title "No Results" --msgbox "No devices found matching '$$SEARCH_TERM'." 10 60 3>&1 1>&2 2>&3; \
+				continue; \
+			fi; \
+			SEARCH_SELECTED=$$(whiptail --title "Search Results" --menu "Matches for '$$SEARCH_TERM':" 22 78 12 SEARCH_AGAIN New_Search $$SEARCH_RESULTS 3>&1 1>&2 2>&3); \
+			if [ -z "$$SEARCH_SELECTED" ]; then continue; fi; \
+			if [ "$$SEARCH_SELECTED" = "SEARCH_AGAIN" ]; then \
+				# Selecting SEARCH_AGAIN cancels out of this if-block and restarts the while loop, \
+				# but we want to go straight back to the search prompt, so we inject a pseudo-flag \
+				SELECTED_MCU="SEARCH"; \
+				continue; \
+			fi; \
+			SELECTED_MCU="$$SEARCH_SELECTED"; \
 		fi; \
-	fi; \
+		MAIN_LOOP=0; \
+	done; \
 	\
 	# 2. VDD Voltage Selection Menu \
 	VDD_MENU="UNSET Target_Self-Powered_(Safe) 5.0 5.0V_Power_Supply 3.3 3.3V_Power_Supply 2.5 2.5V_Power_Supply CUSTOM Enter_Arbitrary_Voltage"; \
@@ -101,10 +110,11 @@ menuconfig:
 		FINAL_VDD="$$SELECTED_VDD_CHOICE"; \
 	fi; \
 	\
-	# 3. Save to config.mk \
-	echo "MCU = $$SELECTED_MCU" > config.mk; \
+	# 3. Save to src/config.mk \
+	mkdir -p src; \
+	echo "MCU = $$SELECTED_MCU" > src/config.mk; \
 	if [ -n "$$FINAL_VDD" ]; then \
-		echo "VDD = $$FINAL_VDD" >> config.mk; \
+		echo "VDD = $$FINAL_VDD" >> src/config.mk; \
 	fi; \
-	echo "==> Saved configuration to config.mk:"; \
-	cat config.mk
+	echo "==> Saved configuration to src/config.mk:"; \
+	cat src/config.mk
